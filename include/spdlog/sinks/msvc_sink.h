@@ -1,13 +1,7 @@
-//
 // Copyright(c) 2016 Alexander Dalshov.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
-//
 
 #pragma once
-
-#ifndef SPDLOG_H
-#include "spdlog/spdlog.h"
-#endif
 
 #if defined(_WIN32)
 

@@ -1,18 +1,14 @@
-//
-// Copyright(c) 2015 Gabi Melman.
+// Copyright(c) 2015-present, Gabi Melman & spdlog contributors.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
-//
 
 #pragma once
-
-#ifndef SPDLOG_H
-#include "spdlog/spdlog.h"
-#endif
 
 #include "spdlog/details/file_helper.h"
 #include "spdlog/details/null_mutex.h"
 #include "spdlog/fmt/fmt.h"
 #include "spdlog/sinks/base_sink.h"
+#include "spdlog/details/os.h"
+#include "spdlog/details/synchronous_factory.h"
 
 #include <chrono>
 #include <cstdio>
@@ -125,14 +121,14 @@ using daily_file_sink_st = daily_file_sink<details::null_mutex>;
 //
 // factory functions
 //
-template<typename Factory = default_factory>
+template<typename Factory = spdlog::synchronous_factory>
 inline std::shared_ptr<logger> daily_logger_mt(
     const std::string &logger_name, const filename_t &filename, int hour = 0, int minute = 0, bool truncate = false)
 {
     return Factory::template create<sinks::daily_file_sink_mt>(logger_name, filename, hour, minute, truncate);
 }
 
-template<typename Factory = default_factory>
+template<typename Factory = spdlog::synchronous_factory>
 inline std::shared_ptr<logger> daily_logger_st(
     const std::string &logger_name, const filename_t &filename, int hour = 0, int minute = 0, bool truncate = false)
 {

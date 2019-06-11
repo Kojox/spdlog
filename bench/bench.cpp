@@ -7,7 +7,6 @@
 // bench.cpp : spdlog benchmarks
 //
 #include "spdlog/spdlog.h"
-#include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/daily_file_sink.h"
 #include "spdlog/sinks/null_sink.h"
@@ -36,7 +35,6 @@ int main(int argc, char *argv[])
 
     spdlog::default_logger()->set_pattern("[%^%l%$] %v");
     int howmany = 1000000;
-    int queue_size = howmany + 2;
     int threads = 10;
     size_t file_size = 30 * 1024 * 1024;
     size_t rotating_files = 5;
@@ -48,8 +46,6 @@ int main(int argc, char *argv[])
             howmany = atoi(argv[1]);
         if (argc > 2)
             threads = atoi(argv[2]);
-        if (argc > 3)
-            queue_size = atoi(argv[3]);
 
         spdlog::info("**************************************************************");
         spdlog::info("Single thread, {:n} iterations", howmany);
@@ -65,7 +61,7 @@ int main(int argc, char *argv[])
         auto daily_st = spdlog::daily_logger_st("daily_st", "logs/daily_st.log");
         bench(howmany, std::move(daily_st));
 
-        bench(howmany, spdlog::create<null_sink_st>("null_st"));
+        bench(howmany, std::make_shared<spdlog::logger>("empty_logger"));
 
         spdlog::info("**************************************************************");
         spdlog::info("C-string (400 bytes). Single thread, {:n} iterations", howmany);
@@ -95,17 +91,6 @@ int main(int argc, char *argv[])
         auto daily_mt = spdlog::daily_logger_mt("daily_mt", "logs/daily_mt.log");
         bench_mt(howmany, std::move(daily_mt), threads);
         bench_mt(howmany, spdlog::create<null_sink_mt>("null_mt"), threads);
-
-        spdlog::info("**************************************************************");
-        spdlog::info("Asyncronous.. {:n} threads sharing same logger, {:n} iterations", threads, howmany);
-        spdlog::info("**************************************************************");
-
-        for (int i = 0; i < 3; ++i)
-        {
-            spdlog::init_thread_pool(static_cast<size_t>(queue_size), 1);
-            auto as = spdlog::basic_logger_mt<spdlog::async_factory>("async", "logs/basic_async.log", true);
-            bench_mt(howmany, std::move(as), threads);
-        }
     }
     catch (std::exception &ex)
     {

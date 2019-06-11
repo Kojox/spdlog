@@ -1,7 +1,3 @@
-project(spdlog-utests CXX)
-
-find_package(Threads REQUIRED)
-
 set(SPDLOG_UTESTS_SOURCES
     test_errors.cpp
     test_file_helper.cpp
@@ -19,11 +15,28 @@ set(SPDLOG_UTESTS_SOURCES
     test_sink.h
     test_fmt_helper.cpp)
 
-add_executable(${PROJECT_NAME} ${SPDLOG_UTESTS_SOURCES})
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
-
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/logs")
-
 enable_testing()
-add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
+
+# The compiled library tests
+if(SPDLOG_BUILD_TESTS)
+    add_executable(spdlog-utests ${SPDLOG_UTESTS_SOURCES})
+	spdlog_enable_warnings(spdlog-utests)
+    target_link_libraries(spdlog-utests PRIVATE spdlog)
+	if(SPDLOG_SANITIZE_ADDRESS)
+		spdlog_enable_sanitizer(spdlog-utests)
+	endif()
+    add_test(NAME spdlog-utests COMMAND spdlog-utests)
+
+endif()
+
+# The header-only library version tests
+if(SPDLOG_BUILD_HO_TESTS)
+    add_executable(spdlog-utests-ho ${SPDLOG_UTESTS_SOURCES})
+	spdlog_enable_warnings(spdlog-utests-ho)
+    target_link_libraries(spdlog-utests-ho PRIVATE spdlog::spdlog_header_only)
+	if(SPDLOG_SANITIZE_ADDRESS)
+		spdlog_set_address_sanitizer(spdlog-utests-ho)
+	endif()
+    add_test(NAME spdlog-utests-ho COMMAND spdlog-utests-ho)
+endif()

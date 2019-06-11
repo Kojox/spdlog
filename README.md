@@ -1,23 +1,17 @@
 # spdlog
 
-Very fast, header only, C++ logging library. [![Build Status](https://travis-ci.org/gabime/spdlog.svg?branch=master)](https://travis-ci.org/gabime/spdlog)&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true)](https://ci.appveyor.com/project/gabime/spdlog)
+Very fast, header-only/statically-compiled, C++ logging library. [![Build Status](https://travis-ci.org/gabime/spdlog.svg?branch=master)](https://travis-ci.org/gabime/spdlog)&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true)](https://ci.appveyor.com/project/gabime/spdlog)
 
 
 
-## Install
-#### Just copy the headers:
-
+## Install 
+#### Header only version
 * Copy the source [folder](https://github.com/gabime/spdlog/tree/v1.x/include/spdlog) to your build tree and use a C++11 compiler.
 
-#### Or use your favorite package manager:
+#### Static lib version (recommended - much faster compile times, v1.4.0)
+* Copy [src/spdlog.cpp](https://github.com/gabime/spdlog/blob/v1.x/src/spdlog.cpp) to your build tree and pass the `-DSPDLOG_COMPILED_LIB` to the compiler.
+* Or use CMake to build and use. See [example](https://github.com/gabime/spdlog/blob/v1.x/example/CMakeLists.txt).
 
-* Homebrew: `brew install spdlog`
-* FreeBSD:  `cd /usr/ports/devel/spdlog/ && make install clean`
-* Fedora: `yum install spdlog`
-* Gentoo: `emerge dev-libs/spdlog`
-* Arch Linux: `yaourt -S spdlog-git`
-* vcpkg: `vcpkg install spdlog`
- 
 
 ## Platforms
  * Linux, FreeBSD, OpenBSD, Solaris, AIX
@@ -25,9 +19,17 @@ Very fast, header only, C++ logging library. [![Build Status](https://travis-ci.
  * macOS (clang 3.5+)
  * Android
 
+## Package managers:
+* Homebrew: `brew install spdlog`
+* FreeBSD:  `cd /usr/ports/devel/spdlog/ && make install clean`
+* Fedora: `yum install spdlog`
+* Gentoo: `emerge dev-libs/spdlog`
+* Arch Linux: `yaourt -S spdlog-git`
+* vcpkg: `vcpkg install spdlog`
+
 ## Features
 * Very fast (see [benchmarks](#benchmarks) below).
-* Headers only, just copy and use.
+* Headers only, just copy and use. Or use as a compiled library.
 * Feature rich formatting, using the excellent [fmt](https://github.com/fmtlib/fmt) library.
 * Fast asynchronous mode (optional)
 * [Custom](https://github.com/gabime/spdlog/wiki/3.-Custom-formatting) formatting.
@@ -42,38 +44,7 @@ Very fast, header only, C++ logging library. [![Build Status](https://travis-ci.
 * Severity based filtering - threshold levels can be modified in runtime as well as in compile time.
 * Binary data logging.
 
-
-## Benchmarks
-
-Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/bench.cpp) done in Ubuntu 64 bit, Intel i7-4770 CPU @ 3.40GHz
-
-#### Synchronous mode
-```
-*******************************************************************************
-Single thread, 1,000,000 iterations
-*******************************************************************************
-basic_st...             Elapsed: 0.181652       5,505,042/sec
-rotating_st...          Elapsed: 0.181781       5,501,117/sec
-daily_st...             Elapsed: 0.187595       5,330,630/sec
-null_st...              Elapsed: 0.0504704      19,813,602/sec
-*******************************************************************************
-10 threads sharing same logger, 1,000,000 iterations
-*******************************************************************************
-basic_mt...             Elapsed: 0.616035       1,623,284/sec
-rotating_mt...          Elapsed: 0.620344       1,612,008/sec
-daily_mt...             Elapsed: 0.648353       1,542,369/sec
-null_mt...              Elapsed: 0.151972       6,580,166/sec
-``` 
-#### Asynchronous mode
-```
-*******************************************************************************
-10 threads sharing same logger, 1,000,000 iterations 
-*******************************************************************************
-async...                Elapsed: 0.350066       2,856,606/sec
-async...                Elapsed: 0.314865       3,175,960/sec
-async...                Elapsed: 0.349851       2,858,358/sec
-```
-
+ 
 ## Usage samples
 
 #### Basic usage
@@ -317,6 +288,60 @@ void android_example()
     auto android_logger = spdlog::android_logger_mt("android", tag);
     android_logger->critical("Use \"adb shell logcat\" to view this message.");
 }
+```
+
+## Benchmarks
+
+Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/bench.cpp) done in Ubuntu 64 bit, Intel i7-4770 CPU @ 3.40GHz
+
+#### Synchronous mode
+```
+[info] **************************************************************
+[info] Single thread, 1,000,000 iterations
+[info] **************************************************************
+[info] basic_st         Elapsed: 0.17 secs        5,777,626/sec
+[info] rotating_st      Elapsed: 0.18 secs        5,475,894/sec
+[info] daily_st         Elapsed: 0.20 secs        5,062,659/sec
+[info] empty_logger     Elapsed: 0.07 secs       14,127,300/sec
+[info] **************************************************************
+[info] C-string (400 bytes). Single thread, 1,000,000 iterations
+[info] **************************************************************
+[info] basic_st         Elapsed: 0.41 secs        2,412,483/sec
+[info] rotating_st      Elapsed: 0.72 secs        1,389,196/sec
+[info] daily_st         Elapsed: 0.42 secs        2,393,298/sec
+[info] null_st          Elapsed: 0.04 secs       27,446,957/sec
+[info] **************************************************************
+[info] 10 threads sharing same logger, 1,000,000 iterations
+[info] **************************************************************
+[info] basic_mt         Elapsed: 0.60 secs        1,659,613/sec
+[info] rotating_mt      Elapsed: 0.62 secs        1,612,493/sec
+[info] daily_mt         Elapsed: 0.61 secs        1,638,305/sec
+[info] null_mt          Elapsed: 0.16 secs        6,272,758/sec
+```
+#### ASynchronous mode
+```
+[info] -------------------------------------------------
+[info] Messages     : 1,000,000
+[info] Threads      : 10
+[info] Queue        : 8,192 slots
+[info] Queue memory : 8,192 x 272 = 2,176 KB 
+[info] Total iters  : 3
+[info] -------------------------------------------------
+[info] 
+[info] *********************************
+[info] Queue Overflow Policy: block
+[info] *********************************
+[info] Elapsed: 1.70784 secs     585,535/sec
+[info] Elapsed: 1.69805 secs     588,910/sec
+[info] Elapsed: 1.7026 secs      587,337/sec
+[info] 
+[info] *********************************
+[info] Queue Overflow Policy: overrun
+[info] *********************************
+[info] Elapsed: 0.372816 secs    2,682,285/sec
+[info] Elapsed: 0.379758 secs    2,633,255/sec
+[info] Elapsed: 0.373532 secs    2,677,147/sec
+
 ```
 
 ## Documentation
